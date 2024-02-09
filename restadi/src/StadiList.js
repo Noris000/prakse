@@ -60,7 +60,7 @@ const StadiList = () => {
       setSearchQuery(historyItem);
       setPage(1);
       setShowSuggestions(false);
-    }, 300) // Adjust debounce delay as needed
+    }, 300)
   ).current;
 
   // Click handler for search history items
@@ -72,7 +72,7 @@ const StadiList = () => {
   const handleSearch = (query) => {
     setSearchQuery(query);
     setPage(1);
-    setShowSuggestions(query.trim() !== ''); // Show suggestions only if the search query is not empty
+    setShowSuggestions(query.trim() !== '');
   };
 
   // Click handler for document to close suggestions
@@ -94,7 +94,7 @@ const StadiList = () => {
         saveSuggestionToLocalStorage(trimmedQuery);
       }
       setPage(1);
-      setShowSuggestions(false); // Close suggestions on pressing Enter
+      setShowSuggestions(false);
     }
   };
 
@@ -129,12 +129,13 @@ const StadiList = () => {
     };
   }, []);
 
+  // Effect for fetching data from the server
   useEffect(() => {
     if (!isInitialMount) {
       setLoading(true);
       setError(null);
   
-      const trimmedSearchQuery = searchQuery ? searchQuery.trim() : ''; // Ensure searchQuery is not null
+      const trimmedSearchQuery = searchQuery ? searchQuery.trim() : '';
   
       axios
         .get(`http://127.0.0.1:8000/api/stadi?limit=10&offset=${(page - 1) * 10}&search=${trimmedSearchQuery}`)
@@ -143,7 +144,6 @@ const StadiList = () => {
             setStadi((prevStadi) => (page === 1 ? response.data.stadi : [...prevStadi, ...response.data.stadi]));
             setSuggestions(response.data.suggestions);
             setLoading(false);
-            console.log('Response Data:', response.data); // Log the entire response data object
           } else {
             console.error('Error fetching Stadi. Unexpected status code:', response.status);
             setError('Error fetching Stadi. Unexpected status code: ' + response.status);
@@ -157,7 +157,7 @@ const StadiList = () => {
           setLoading(false);
         });
   
-      setShowSuggestions(trimmedSearchQuery !== ''); // Use trimmedSearchQuery to check for empty query
+      setShowSuggestions(trimmedSearchQuery !== '');
     }
     setIsInitialMount(false);
   }, [isInitialMount, page, searchQuery, searchHistory, suggestionClicked]);
@@ -207,7 +207,7 @@ const StadiList = () => {
 {showSuggestions && suggestions && suggestions.length > 0 && (
   <ul className="suggestions-list">
     {suggestions
-      .filter(suggestion => suggestion.base_name.trim() !== '') // Filter out empty suggestions
+      .filter(suggestion => suggestion.base_name.trim() !== '')
       .map((suggestion, index) => (
         <li key={index} onClick={() => handleSuggestionClick(suggestion)}>
           {suggestion.base_name}
