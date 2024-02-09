@@ -12,7 +12,7 @@ const StadiList = () => {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState(null);
-  const isInitialMount = useRef(true);
+  const [isInitialMount, setIsInitialMount] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
   const [suggestionClicked, setSuggestionClicked] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
@@ -39,24 +39,33 @@ const StadiList = () => {
 
   // Save suggestion to local storage
   const saveSuggestionToLocalStorage = (suggestion) => {
-    const updatedSearchHistory = [suggestion, ...searchHistory.slice(0, 4)];
-    setSearchHistory(updatedSearchHistory);
-    localStorage.setItem('searchHistory', JSON.stringify(updatedSearchHistory));
-  };
-
-  // Click handler for search history items
-  const handleSearchHistoryClick = (historyItem) => {
-    // Check if the history item is already in the search history
-    if (!searchHistory.includes(historyItem)) {
-      // If not, add it to the search history
-      const updatedSearchHistory = [historyItem, ...searchHistory.slice(0, 4)];
+    // Check if the suggestion already exists in the search history
+    const index = searchHistory.indexOf(suggestion);
+    if (index !== -1) {
+      // Remove the existing entry
+      const updatedSearchHistory = [...searchHistory.slice(0, index), ...searchHistory.slice(index + 1)];
+      setSearchHistory([suggestion, ...updatedSearchHistory.slice(0, 4)]);
+      localStorage.setItem('searchHistory', JSON.stringify([suggestion, ...updatedSearchHistory.slice(0, 4)]));
+    } else {
+      // Add the new suggestion to the top of the history
+      const updatedSearchHistory = [suggestion, ...searchHistory.slice(0, 4)];
       setSearchHistory(updatedSearchHistory);
       localStorage.setItem('searchHistory', JSON.stringify(updatedSearchHistory));
     }
+  };
 
-    setSearchQuery(historyItem);
-    setPage(1);
-    setShowSuggestions(false);
+  // Debounced function for handling search history clicks
+  const debouncedHandleSearchHistoryClick = useRef(
+    debounce((historyItem) => {
+      setSearchQuery(historyItem);
+      setPage(1);
+      setShowSuggestions(false);
+    }, 300) // Adjust debounce delay as needed
+  ).current;
+
+  // Click handler for search history items
+  const handleSearchHistoryClick = (historyItem) => {
+    debouncedHandleSearchHistoryClick(historyItem);
   };
 
   // Input change handler for search bar
@@ -79,7 +88,11 @@ const StadiList = () => {
   // Key press handler for search bar
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
-      setSearchQuery(e.target.value);
+      const trimmedQuery = searchQuery.trim();
+      if (trimmedQuery !== '') {
+        // Save search query to search history
+        saveSuggestionToLocalStorage(trimmedQuery);
+      }
       setPage(1);
       setShowSuggestions(false); // Close suggestions on pressing Enter
     }
@@ -100,8 +113,11 @@ const StadiList = () => {
 
   // Delete search history
   const deleteSearchHistory = () => {
-    setSearchHistory([]);
-    localStorage.removeItem('searchHistory');
+    const confirmed = window.confirm("Are you sure you want to delete the search history?");
+    if (confirmed) {
+      setSearchHistory([]);
+      localStorage.removeItem('searchHistory');
+    }
   };
 
   // Effect for document click event listener
@@ -113,39 +129,38 @@ const StadiList = () => {
     };
   }, []);
 
-  // Effect for fetching stadi data
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
+    if (!isInitialMount) {
+      setLoading(true);
+      setError(null);
+  
+      const trimmedSearchQuery = searchQuery ? searchQuery.trim() : ''; // Ensure searchQuery is not null
+  
+      axios
+        .get(`http://127.0.0.1:8000/api/stadi?limit=10&offset=${(page - 1) * 10}&search=${trimmedSearchQuery}`)
+        .then((response) => {
+          if (response.status === 200) {
+            setStadi((prevStadi) => (page === 1 ? response.data.stadi : [...prevStadi, ...response.data.stadi]));
+            setSuggestions(response.data.suggestions);
+            setLoading(false);
+            console.log('Response Data:', response.data); // Log the entire response data object
+          } else {
+            console.error('Error fetching Stadi. Unexpected status code:', response.status);
+            setError('Error fetching Stadi. Unexpected status code: ' + response.status);
+            setLoading(false);
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching Stadi:', error);
+          console.error('Error details:', error.response || error.request || error.message);
+          setError('Server is down!!!');
+          setLoading(false);
+        });
+  
+      setShowSuggestions(trimmedSearchQuery !== ''); // Use trimmedSearchQuery to check for empty query
     }
-
-    setLoading(true);
-    setError(null);
-
-    axios
-      .get(`http://127.0.0.1:8000/api/stadi?limit=10&offset=${(page - 1) * 10}&search=${searchQuery}`)
-      .then((response) => {
-        if (response.status === 200) {
-          setStadi((prevStadi) => (page === 1 ? response.data.stadi : [...prevStadi, ...response.data.stadi]));
-          setSuggestions(response.data.suggestions);
-          setLoading(false);
-        } else {
-          console.error('Error fetching Stadi. Unexpected status code:', response.status);
-          setError('Error fetching Stadi. Unexpected status code: ' + response.status);
-          setLoading(false);
-        }
-      })
-      .catch((error) => {
-        console.error('Error fetching Stadi:', error);
-        console.error('Error details:', error.response || error.request || error.message);
-        setError('Server is down!!!');
-        setLoading(false);
-      });
-
-    setShowSuggestions(searchQuery.trim() !== '');
-
-  }, [page, searchQuery, searchHistory, suggestionClicked]);
+    setIsInitialMount(false);
+  }, [isInitialMount, page, searchQuery, searchHistory, suggestionClicked]);
 
   // Effect for intersection observer
   useEffect(() => {
@@ -189,13 +204,15 @@ const StadiList = () => {
           onKeyDown={handleKeyPress}
           className="search-input"
         />
-        {showSuggestions && suggestions && suggestions.length > 0 && (
+{showSuggestions && suggestions && suggestions.length > 0 && (
   <ul className="suggestions-list">
-    {suggestions.map((suggestion) => (
-      <li key={suggestion.id} onClick={() => handleSuggestionClick(suggestion)}>
-        {suggestion.base_name}
-      </li>
-    ))}
+    {suggestions
+      .filter(suggestion => suggestion.base_name.trim() !== '') // Filter out empty suggestions
+      .map((suggestion, index) => (
+        <li key={index} onClick={() => handleSuggestionClick(suggestion)}>
+          {suggestion.base_name}
+        </li>
+      ))}
   </ul>
 )}
       </div>
@@ -213,24 +230,26 @@ const StadiList = () => {
           {searchHistory.length === 0 ? (
             <div className="centered-message">
               <p>No recent searches</p>
+            </div>
+          ) : (
+            <div>
+              <ul className="search-history-list">
+                {searchHistory.map((historyItem, index) => (
+                  <li key={historyItem + index} onClick={() => handleSearchHistoryClick(historyItem)}>
+                    {historyItem}
+                  </li>
+                ))}
+              </ul>
               <button className={`delete-history-button ${darkMode ? 'dark-mode' : ''}`} onClick={deleteSearchHistory}>
                 Delete History
               </button>
             </div>
-          ) : (
-            <ul className="search-history-list">
-              {searchHistory.map((historyItem, index) => (
-                <li key={index} onClick={() => handleSearchHistoryClick(historyItem)}>
-                  {historyItem}
-                </li>
-              ))}
-            </ul>
           )}
         </div>
       )}
       {error && <p className="error-message">{error}</p>}
       <ul className="stadi-list">
-        {stadi.length === 0 && !loading ? (
+        {Array.isArray(stadi) && stadi.length === 0 && !loading ? (
           <p className="no-data">No data found</p>
         ) : (
           stadi.map((item) => (
@@ -248,5 +267,14 @@ const StadiList = () => {
     </div>
   );
 };
+
+// Utility function for debouncing
+function debounce(func, timeout) {
+  let timer;
+  return function (...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => func.apply(this, args), timeout);
+  };
+}
 
 export default StadiList;
