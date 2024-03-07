@@ -20,8 +20,34 @@ const StadiList = () => {
   const [sortDirection, setSortDirection] = useState('asc');
   const [showSortOptions, setShowSortOptions] = useState(false);
   const [showNames, setShowNames] = useState(Array(10).fill(false));
+  const [slider1Value, setSlider1Value] = useState(50);
+  const [slider2Value, setSlider2Value] = useState(50);
+  const [slider3Value, setSlider3Value] = useState(50);
+  const [slider4Value, setSlider4Value] = useState(50);
+  const [slider5Value, setSlider5Value] = useState(50);
+  const [slider6Value, setSlider6Value] = useState(50);
+  const [soilCheckboxes, setSoilCheckboxes] = useState({
+    clay: false,
+    loam: false,
+    sand: false,
+    chalk: false,
+  });
+  const [waterCheckboxes, setWaterCheckboxes] = useState({
+    well: false,
+    poorly: false,
+    moistButWell: false,
+  });
+  const [pHCheckboxes, setPHCheckboxes] = useState({
+    acid: false,
+    alkaline: false,
+    neutral: false,
+  });
+  const [sunlightCheckboxes, setSunlightCheckboxes] = useState({
+    fullSun: false,
+    partialShade: false,
+    fullShade: false,
+  });
 
-  const observer = useRef();
   const lastStadiElementRef = useRef();
 
   const handleObserver = (entries) => {
@@ -120,20 +146,20 @@ const StadiList = () => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
-  
+
       try {
         const trimmedSearchQuery = searchQuery.trim();
         const response = await axios.get(`http://127.0.0.1:8000/api/stadi`, {
-  params: {
-    limit: 10,
-    offset: (page - 1) * 10,
-    search: trimmedSearchQuery,
-    searchSynonyms: true,
-    sortBy: sortBy,
-    sortDirection: sortDirection,
-  },
-});
-  
+          params: {
+            limit: 10,
+            offset: (page - 1) * 10,
+            search: trimmedSearchQuery,
+            searchSynonyms: true,
+            sortBy: sortBy,
+            sortDirection: sortDirection,
+          },
+        });
+
         if (response.status === 200) {
           if (page === 1) {
             setStadi(response.data.stadi.filter((item, index, self) =>
@@ -152,52 +178,50 @@ const StadiList = () => {
               return newStadi;
             });
           }
-  
-          const suggestionsWithSynonyms = response.data.suggestions.map((suggestion) => {
-            let suggestionText = suggestion.base_name;
-            if (suggestion.synonyms && Array.isArray(suggestion.synonyms) && suggestion.synonyms.length > 0) {
-              suggestionText += ` (${suggestion.synonyms.map((synonym) => synonym.name).join(', ')})`;
-            }
-            return {
-              ...suggestion,
-              text: suggestionText,
-            };
-          });
-          setSuggestions(suggestionsWithSynonyms.filter((item, index, self) =>
-            index === self.findIndex((t) => (
-              t.base_name === item.base_name
-            ))
-          ));
         } else {
           console.error('Error fetching Stadi. Unexpected status code:', response.status);
           setError('Error fetching Stadi. Unexpected status code: ' + response.status);
         }
+
+        const suggestionsWithSynonyms = response.data.suggestions.map((suggestion) => {
+          let suggestionText = suggestion.base_name;
+          if (suggestion.synonyms && Array.isArray(suggestion.synonyms) && suggestion.synonyms.length > 0) {
+            suggestionText += ` (${suggestion.synonyms.map((synonym) => synonym.name).join(', ')})`;
+          }
+          return {
+            ...suggestion,
+            text: suggestionText,
+          };
+        });
+        setSuggestions(suggestionsWithSynonyms.filter((item, index, self) =>
+          index === self.findIndex((t) => (
+            t.base_name === item.base_name
+          ))
+        ));
       } catch (error) {
         console.error('Error fetching Stadi:', error);
         console.error('Error details:', error.response || error.request || error.message);
         setError('Server is down!!!');
       }
-  
+
       setLoading(false);
     };
-  
+
     fetchData();
   }, [page, searchQuery, sortBy, sortDirection]);
 
   useEffect(() => {
-    if (lastStadiElementRef.current) {
-      observer.current = new IntersectionObserver(handleObserver, {
-        root: null,
-        rootMargin: '0px',
-        threshold: 1.0,
-      });
+    const observer = new IntersectionObserver(handleObserver);
 
-      observer.current.observe(lastStadiElementRef.current);
+    const currentRef = lastStadiElementRef.current;
+
+    if (currentRef) {
+      observer.observe(currentRef);
     }
 
     return () => {
-      if (observer.current) {
-        observer.current.disconnect();
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, [lastStadiElementRef]);
@@ -245,6 +269,58 @@ const StadiList = () => {
       setSuggestionClicked(false);
     }
   }, [searchQuery, suggestionClicked]);
+
+  const handleSlider1Change = (e) => {
+    setSlider1Value(e.target.value);
+  };
+
+  const handleSlider2Change = (e) => {
+    setSlider2Value(e.target.value);
+  };
+
+  const handleSlider3Change = (e) => {
+    setSlider3Value(e.target.value);
+  };
+
+  const handleSlider4Change = (e) => {
+    setSlider4Value(e.target.value);
+  };
+
+  const handleSlider5Change = (e) => {
+    setSlider5Value(e.target.value);
+  };
+
+  const handleSlider6Change = (e) => {
+    setSlider6Value(e.target.value);
+  };
+
+  const handleSoilCheckboxChange = (name) => {
+    setSoilCheckboxes((prevState) => ({
+      ...prevState,
+      [name]: !prevState[name],
+    }));
+  };
+
+  const handleWaterCheckboxChange = (name) => {
+    setWaterCheckboxes((prevState) => ({
+      ...prevState,
+      [name]: !prevState[name],
+    }));
+  };
+
+  const handlePHCheckboxChange = (name) => {
+    setPHCheckboxes((prevState) => ({
+      ...prevState,
+      [name]: !prevState[name],
+    }));
+  };
+
+  const handleSunlightCheckboxChange = (name) => {
+    setSunlightCheckboxes((prevState) => ({
+      ...prevState,
+      [name]: !prevState[name],
+    }));
+  };
 
   return (
     <div className="m-4">
@@ -306,88 +382,171 @@ const StadiList = () => {
           </div>
         </div>
         {showSortOptions && (
-          <div
-            className={`sort-options-container w-full md:w-1/2 mx-auto border ${
-              darkMode ? 'border-gray-700 dark-mode' : 'border-gray-300'
-            } rounded-md mb-4`}
-          >
+          <div className={`sort-options-container w-full md:w-1/2 mx-auto border ${darkMode ? 'border-gray-700 dark-mode' : 'border-gray-300'} rounded-md mb-4`}>
             <ul className="sort-options-list">
               <li
                 onClick={handleSortByName}
-                className={`cursor-pointer ${
-                  sortBy === 'name' ? 'font-bold' : ''
-                } border p-2 rounded-md ${
-                  darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-100'
-                }`}
+                className={`cursor-pointer ${sortBy === 'name' ? 'font-bold' : ''} border p-2 rounded-md ${darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-100'}`}
               >
                 Sort by Name {sortBy === 'name' && `(${sortDirection === 'asc' ? 'A-Z' : 'Z-A'})`}
               </li>
               <li
                 onClick={handleSortByDateAdded}
-                className={`cursor-pointer ${
-                  sortBy === 'dateAdded' ? 'font-bold' : ''
-                } border p-2 rounded-md ${
-                  darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-100'
-                }`}
+                className={`cursor-pointer ${sortBy === 'dateAdded' ? 'font-bold' : ''} border p-2 rounded-md ${darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-100'}`}
               >
-                Sort by Date Added{' '}
-                {sortBy === 'dateAdded' &&
-                  `(${sortDirection === 'asc' ? 'Oldest-Newest' : 'Newest-Oldest'})`}
+                Sort by Date Added {sortBy === 'dateAdded' && `(${sortDirection === 'asc' ? 'Oldest-Newest' : 'Newest-Oldest'})`}
+              </li>
+              <li
+                onClick={() => setSortBy('rangeSliders')}
+                className={`cursor-pointer ${sortBy === 'rangeSliders' ? 'font-bold' : ''} border p-2 rounded-md ${darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-100'}`}
+              >
+                Sort by Range Sliders
+              </li>
+              <li
+                onClick={() => setSortBy('checkboxes')}
+                className={`cursor-pointer ${sortBy === 'checkboxes' ? 'font-bold' : ''} border p-2 rounded-md ${darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-100'}`}
+              >
+                Sort by Checkboxes
               </li>
             </ul>
-          </div>
-        )}
-        {showHistory && (
-          <div className="search-history-container w-full md:w-1/2 mx-auto border border-gray-300 rounded-md p-4 mb-4">
-            <h2 className="text-xl font-semibold mb-2">Search History:</h2>
-            {searchHistory.length === 0 ? (
-              <div className="centered-message">
-                <p>No recent searches</p>
+            {sortBy === 'rangeSliders' && (
+              <div className="sliders-container px-4 py-2">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="heigt-min text-center">
+                    <label className="mb-2 block font-bold">Height Min</label>
+                    <input type="range" min="0" max="100" value={slider1Value} onChange={handleSlider1Change} />
+                  </div>
+                  <div className="height-max text-center">
+                    <label className="mb-2 block font-bold">Height Max</label>
+                    <input type="range" min="0" max="100" value={slider2Value} onChange={handleSlider2Change} />
+                  </div>
+                  <div className="width-min text-center">
+                    <label className="mb-2 block font-bold">Width Min</label>
+                    <input type="range" min="0" max="100" value={slider3Value} onChange={handleSlider3Change} />
+                  </div>
+                  <div className="width-max text-center">
+                    <label className="mb-2 block font-bold">Width Max</label>
+                    <input type="range" min="0" max="100" value={slider4Value} onChange={handleSlider4Change} />
+                  </div>
+                  <div className="height-flowers text-center">
+                    <label className="mb-2 block font-bold">Height Flowers</label>
+                    <input type="range" min="0" max="100" value={slider5Value} onChange={handleSlider5Change} />
+                  </div>
+                  <div className="height-leaves text-center">
+                    <label className="mb-2 block font-bold">Height Leaves</label>
+                    <input type="range" min="0" max="100" value={slider6Value} onChange={handleSlider6Change} />
+                  </div>
+                </div>
               </div>
-            ) : (
-              <div>
-                <ul className="search-history-list">
-                  {searchHistory.map((historyItem, index) => (
-                    <li
-                      key={historyItem + index}
-                      onClick={() => handleSearchHistoryClick(historyItem)}
-                      className={`cursor-pointer hover:underline border p-2 mb-2 rounded-md ${
-                        darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200'
-                      }`}
-                    >
-                      {historyItem}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  className={`delete-history-button ${
-                    darkMode ? 'bg-gray-500' : 'bg-white'
-                  } ${
-                    darkMode ? 'text-white' : 'text-black'
-                  } px-2 py-1 rounded-md mt-2 ${
-                    darkMode ? '' : 'border border-black hover:bg-gray-200'
-                  }`}
-                  onClick={deleteSearchHistory}
-                >
-                  Delete History
-                </button>
+            )}
+            {sortBy === 'checkboxes' && (
+              <div className="checkboxes-container px-4 py-2">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h2 className="font-bold mb-2">Soil Type</h2>
+                    {Object.entries(soilCheckboxes).map(([key, value]) => (
+                      <div key={key} className="mb-2">
+                        <input
+                          type="checkbox"
+                          id={`soil-${key}`}
+                          checked={value}
+                          onChange={() => handleSoilCheckboxChange(key)}
+                        />
+                        <label htmlFor={`soil-${key}`} className="ml-2">{key}</label>
+                      </div>
+                    ))}
+                  </div>
+                  <div>
+                    <h2 className="font-bold mb-2">Water Needs</h2>
+                    {Object.entries(waterCheckboxes).map(([key, value]) => (
+                      <div key={key} className="mb-2">
+                        <input
+                          type="checkbox"
+                          id={`water-${key}`}
+                          checked={value}
+                          onChange={() => handleWaterCheckboxChange(key)}
+                        />
+                        <label htmlFor={`water-${key}`} className="ml-2">{key}</label>
+                      </div>
+                    ))}
+                  </div>
+                  <div>
+                    <h2 className="font-bold mb-2">pH Level</h2>
+                    {Object.entries(pHCheckboxes).map(([key, value]) => (
+                      <div key={key} className="mb-2">
+                        <input
+                          type="checkbox"
+                          id={`ph-${key}`}
+                          checked={value}
+                          onChange={() => handlePHCheckboxChange(key)}
+                        />
+                        <label htmlFor={`ph-${key}`} className="ml-2">{key}</label>
+                      </div>
+                    ))}
+                  </div>
+                  <div>
+                    <h2 className="font-bold mb-2">Sunlight Needs</h2>
+                    {Object.entries(sunlightCheckboxes).map(([key, value]) => (
+                      <div key={key} className="mb-2">
+                        <input
+                          type="checkbox"
+                          id={`sunlight-${key}`}
+                          checked={value}
+                          onChange={() => handleSunlightCheckboxChange(key)}
+                        />
+                        <label htmlFor={`sunlight-${key}`} className="ml-2">{key}</label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
           </div>
         )}
-<SearchResults
+        {showHistory && (
+          <div className={`search-history-container ${darkMode ? 'dark-mode' : ''}`}>
+            <h2 className={`text-xl mb-2 ${darkMode ? 'text-white' : 'text-black'}`}>Search History</h2>
+            {searchHistory.length > 0 ? (
+              <ul className="search-history-list">
+                {searchHistory.map((historyItem, index) => (
+                  <li
+                    key={index}
+                    onClick={() => handleSearchHistoryClick(historyItem)}
+                    className={`cursor-pointer border p-2 rounded-md mb-2 ${
+                      darkMode ? 'border-gray-700 hover:bg-gray-600' : 'border-gray-300 hover:bg-gray-100'
+                    }`}
+                  >
+                    {historyItem}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className={`text-sm ${darkMode ? 'text-white' : 'text-black'}`}>No search history available</p>
+            )}
+            <button
+              onClick={deleteSearchHistory}
+              className={`clear-history-button mt-2 px-4 py-2 rounded-md ${
+                darkMode ? 'bg-gray-500 text-white' : 'bg-white text-black'
+              }`}
+            >
+              Clear History
+            </button>
+          </div>
+        )}
+        <SearchResults
           stadi={stadi}
           loading={loading}
           error={error}
           darkMode={darkMode}
           showNames={showNames}
-          lastStadiElementRef={lastStadiElementRef}
           toggleShowTypeAndName={toggleShowTypeAndName}
+          lastStadiElementRef={lastStadiElementRef}
         />
       </div>
     </div>
   );
-        };  
+};
+
 function debounce(func, timeout) {
   let timer;
   return function (...args) {

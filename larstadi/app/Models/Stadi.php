@@ -15,4 +15,10 @@ class Stadi extends Model
     {
         return $this->hasMany(StadiSyn::class, "bid", "id");
     }
+
+    // Define the relationship with StadiProps model
+    public function stadiProps()
+    {
+        return $this->hasMany(StadiProps::class, "bid", "id");
+    }
 }

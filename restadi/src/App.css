@@ -1,4 +1,37 @@
-
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+
+@media screen and (min-width: 1260px) {
+    
+    .checkboxes-container .grid-cols-2 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .sliders-container .grid-cols-2{
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .sliders-container .height-min {
+        order: 1;
+    }
+
+    .sliders-container .width-min {
+        order: 2;
+    }
+
+    .sliders-container .height-flowers {
+        order: 3;
+    }
+
+    .sliders-container .height-max {
+        order: 4;
+    }
+
+    .sliders-container .width-max {
+        order: 5;
+    }
+
+    .sliders-container .height-leaves {
+        order: 6;
+    }
+}
