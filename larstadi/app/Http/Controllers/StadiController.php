@@ -8,56 +8,92 @@ use Illuminate\Support\Facades\DB;
 
 class StadiController extends Controller
 {
+    // Method to retrieve Stadi records with filtering, sorting, and pagination
     public function index(Request $request)
     {
+        // Retrieving request parameters
         $limit = $request->input('limit', 10);
         $offset = $request->input('offset', 0);
         $search = $request->input('search', '');
-        $searchSynonyms = $request->input('searchSynonyms', false); // New parameter to enable searching by synonyms
-        $sortBy = $request->input('sortBy', 'name'); // Default sort by name
-        $sortDirection = $request->input('sortDirection', 'asc'); // Default sort direction ascending
+        $searchSynonyms = $request->input('searchSynonyms', false);
+        $sortBy = $request->input('sortBy', 'name');
+        $sortDirection = $request->input('sortDirection', 'asc');
+        $sliderValues = $request->input('sliderValues', []);
 
-        // Constructing the query
+        // Constructing the initial query
         $query = Stadi::query();
 
-        // If search term is provided, filter based on base name directly
+        // Filtering based on search term and synonyms
         if ($search) {
             $query->where('base_name', 'like', '%' . $search . '%');
-
-            // Add logic to search by synonyms if enabled
             if ($searchSynonyms) {
-                // Include synonyms in search
                 $query->orWhereHas('synonyms', function ($query) use ($search) {
                     $query->where('synonym', 'like', '%' . $search . '%');
                 });
             }
         }
 
+        // Filtering based on slider values
+        if (!empty($sliderValues)) {
+            foreach ($sliderValues as $pid => $value) {
+                if (!empty($value)) {
+                    $query->whereHas('stadiProps', function ($query) use ($pid, $value) {
+                        $query->where('pid', $pid)->where('value_num', $value);
+                    });
+                }
+            }
+        }
+
         // Sorting logic
         if ($sortBy === 'name') {
-            $query->orderBy('base_name', $sortDirection); // Order by base_name
+            $query->orderBy('base_name', $sortDirection);
         } elseif ($sortBy === 'dateAdded') {
             $query->orderBy('date_added', $sortDirection);
         }
 
-        // Fetching the data with pagination
+        // Paginated retrieval of Stadi records
         $stadi = $query->skip($offset)->take($limit)->get();
 
-        // Fetching data from stadi__props table for checkboxes
+        // Fetching additional data for checkboxes and range sliders
         $checkboxValues = DB::table('stadi__props')
             ->whereIn('pid', [13, 14, 15, 16])
-            ->whereIn('bid', $stadi->pluck('id')->all()) // Filter by Stadi IDs
+            ->whereIn('bid', $stadi->pluck('id')->all())
             ->get();
 
-        // Transforming the results
-        $results = $stadi->map(function ($item) use ($checkboxValues) {
+        $rangeSliderValues = DB::table('stadi__props')
+            ->whereIn('pid', [3, 4, 6, 7, 25, 26])
+            ->whereIn('bid', $stadi->pluck('id')->all())
+            ->get();
+
+        // Transformation of retrieved data
+        $results = $stadi->map(function ($item) use ($checkboxValues, $rangeSliderValues) {
+            // Initializing arrays for range sliders and checkboxes
+            $rangeSliders = [];
+            $checkboxes = [];
+
+            // Populating range slider values
+            foreach ($rangeSliderValues as $value) {
+                if ($value->bid === $item->id) {
+                    if (!isset($rangeSliders[$value->pid])) {
+                        $rangeSliders[$value->pid] = $value->value_num;
+                    }
+                }
+            }
+
+            // Populating checkbox values
+            foreach ($checkboxValues as $value) {
+                if ($value->bid === $item->id) {
+                    $checkboxes[$value->pid][] = $value->value_text;
+                }
+            }
+
             return [
                 'id' => $item->id,
                 'base_name' => $item->base_name,
                 'date_added' => $item->date_added,
                 'base_descr' => null,
-                'range_sliders' => $this->getRangeSliders($item),
-                'checkboxes' => $this->getCheckboxes($item),
+                'range_sliders' => $rangeSliders,
+                'checkboxes' => $checkboxes,
                 'synonyms' => $item->synonyms->map(function ($synonym) {
                     return [
                         'type' => $synonym->type,
@@ -67,7 +103,7 @@ class StadiController extends Controller
             ];
         });
 
-        // Fetching suggestions directly based on base names and synonyms
+        // Fetching suggestions based on base names and synonyms
         $suggestions = Stadi::where('base_name', 'like', '%' . $search . '%')
             ->orWhereHas('synonyms', function ($query) use ($search) {
                 $query->where('synonym', 'like', '%' . $search . '%');
@@ -75,7 +111,7 @@ class StadiController extends Controller
             ->limit(5)
             ->get();
 
-        // Transforming suggestions
+        // Formatting suggestions
         $formattedSuggestions = $suggestions->map(function ($suggestion) {
             return [
                 'base_name' => $suggestion->base_name,
@@ -88,78 +124,84 @@ class StadiController extends Controller
             ];
         });
 
+        // Data for checkboxes
+        $checkboxData = [
+            "Soil" => [
+                "pid" => 13,
+                "values" => [
+                    "2" => "Clay",
+                    "3" => "Loam",
+                    "4" => "Sand",
+                    "1" => "Chalk"
+                ]
+            ],
+            "Water" => [
+                "pid" => 14,
+                "values" => [
+                    "1" => "Well–drained",
+                    "3" => "Poorly–drained",
+                    "2" => "Moist but well–drained"
+                ]
+            ],
+            "pH" => [
+                "pid" => 15,
+                "values" => [
+                    "1" => "Acid 0-6.5",
+                    "2" => "Alkaline 7.4+",
+                    "3" => "Neutral 6.6–7.3"
+                ]
+            ],
+            "Sun" => [
+                "pid" => 16,
+                "values" => [
+                    "1" => "Full sun",
+                    "2" => "Partial shade",
+                    "3" => "Full shade"
+                ]
+            ]
+        ];
+
         // Constructing response data
         $responseData = [
             'stadi' => $results->toArray(),
-            'suggestions' => $formattedSuggestions // Include suggestions in the response
+            'suggestions' => $formattedSuggestions,
+            'checkboxData' => $checkboxData
         ];
 
+        // Fetching range slider values for PID 3, PID 4, PID 6, PID 7, PID 25, and PID 26
+        $pidRangeSliderValues = DB::table('stadi__props')
+            ->whereIn('pid', [3, 4, 6, 7, 25, 26])
+            ->select('pid', DB::raw('MIN(value_num) as min_value'), DB::raw('MAX(value_num) as max_value'))
+            ->groupBy('pid')
+            ->get();
+
+        // Adding PID range slider values to the response data
+        $pidRangeSliderValues->each(function ($pidRangeSlider) use (&$responseData) {
+            $pid = 'pid_' . $pidRangeSlider->pid . '_range_slider_values';
+            if (in_array($pidRangeSlider->pid, [3, 4, 6, 7, 25, 26])) {
+                $responseData[$pid] = [
+                    'min' => $pidRangeSlider->min_value,
+                    'max' => $pidRangeSlider->max_value
+                ];
+            }
+        });
+
+        // Returning JSON response
         return response()->json($responseData, 200);
     }
 
+    // Method to show a specific Stadi record
     public function show($base_name)
     {
-        // First try to find in Stadi table
+        // Retrieving Stadi record by base name
         $stadi = Stadi::where('base_name', $base_name)->first();
 
+        // Returning JSON response if not found
+        if (!$stadi) {
+            return response()->json(['error' => 'Plant not found'], 404);
+        }
+
+        // Returning view with Stadi record data
         return view('stadi.show', ['stadi' => $stadi]);
-    }
-
-    private function getRangeSliders($item)
-    {
-        // Fetching range slider values from database for the given item
-        $rangeSliderValues = DB::table('stadi__props')
-            ->whereIn('pid', [3, 4, 6, 7, 25, 26])
-            ->where('bid', $item->id)
-            ->get();
-
-        // Initialize arrays to hold min and max values for each slider
-        $minValues = [];
-        $maxValues = [];
-
-        // Populate min and max values for each slider
-        foreach ($rangeSliderValues as $value) {
-            // Initialize min and max values if not set
-            if (!isset($minValues[$value->value_num])) {
-                $minValues[$value->value_num] = $value->value_num;
-                $maxValues[$value->value_num] = $value->value_num;
-            } else {
-                // Update min and max values if current value is smaller or larger
-                $minValues[$value->value_num] = min($minValues[$value->value_num], $value->value_num);
-                $maxValues[$value->value_num] = max($maxValues[$value->value_num], $value->value_num);
-            }
-        }
-
-        // Initialize an array to hold range sliders
-        $rangeSliders = [];
-
-        // Populate range slider values with default min and max values
-        foreach ($minValues as $valueNum => $minValue) {
-            $rangeSliders[$valueNum] = [
-                'min' => $minValue,
-                'max' => $maxValues[$valueNum],
-            ];
-        }
-
-        return $rangeSliders;
-    }
-
-    private function getCheckboxes($item)
-    {
-        // Fetching data from stadi__props table for checkboxes for the given item
-        $checkboxValues = DB::table('stadi__props')
-            ->whereIn('pid', [13, 14, 15, 16])
-            ->where('bid', $item->id)
-            ->get();
-
-        // Initialize an array to hold checkboxes
-        $checkboxes = [];
-
-        // Populate checkbox values
-        foreach ($checkboxValues as $value) {
-            $checkboxes[$value->pid][] = $value->value_text;
-        }
-
-        return $checkboxes;
     }
 }
