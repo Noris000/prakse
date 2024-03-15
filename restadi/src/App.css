@@ -4,7 +4,7 @@
 
 @media screen and (min-width: 1260px) {
     
-    .checkboxes-container .grid-cols-2 {
+    .checkboxes-container.grid-cols-2 {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
@@ -34,4 +34,91 @@
     .sliders-container .height-leaves {
         order: 6;
     }
+}
+
+.App{
+    transition: background-color 0.3s ease, color 0.3s ease;
+    min-height: 100vh;
+}
+
+.App[data-theme='dark'] {
+    background-color: #333;
+    color: #fff;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.sort-options-container{
+    border-color: rgb(55 65 81 / var(--tw-border-opacity));
+}
+
+.sliders-container{
+    background-color: #fafafa;
+}
+
+.App[data-theme='dark'] .sliders-container{
+    background-color: #302e2e;
+}
+
+.App[data-theme='dark'] .sliders-container input[type='number']{
+    color: #fff;
+    background-color: rgb(107 114 128 / var(--tw-bg-opacity));
+}
+
+.App[data-theme='dark'] .toggle-container button{
+    background-color: rgb(107 114 128 / var(--tw-bg-opacity));
+    color: #fff;
+    border:none;
+}
+
+.App[data-theme='dark'] .toggle-container button:hover{
+    background-color: rgb(75 85 99 / var(--tw-bg-opacity));
+}
+
+.App[data-theme='dark'] .sort-options-list li:hover{
+    background-color: rgb(75 85 99 / var(--tw-bg-opacity));
+}
+
+.App[data-theme='dark'] .search-history-list li{
+    background-color: rgb(107 114 128 / var(--tw-bg-opacity));
+}
+
+.App[data-theme='dark'] .search-history-list li:hover{
+    background-color: rgb(75 85 99 / var(--tw-bg-opacity));
+}
+
+.App[data-theme='dark'] .search-bar-container{
+    background-color: rgb(107 114 128 / var(--tw-bg-opacity));
+}
+
+.App[data-theme='dark'] .search-input {
+    background-color: #6b7280;
+    color: #fff;
+}
+
+.App[data-theme='dark'] .suggestions-list {
+    background-color: #6b7280;
+}
+
+.App[data-theme='dark'] .cursor-pointer {
+    color: #fff;
+}
+
+.App[data-theme='dark'] .cursor-pointer:hover {
+    background-color: #4b5563;
+}
+
+.App[data-theme='dark'] .type-name-container .type-name-button {
+    background-color: #6b7280;
+    color: #fff;
+    border:none;
+}
+
+.App[data-theme='dark'] .type-name-container .type-name-button:hover {
+    background-color: #4b5563;
+}
+
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }

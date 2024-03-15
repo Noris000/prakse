@@ -24,11 +24,7 @@ const SearchResults = ({
               <strong className="text-lg font-semibold">Base Description:</strong> {item.base_descr}<br />
               <div className="type-name-container">
                 <button
-                  className={`type-name-button ${
-                    darkMode ? 'dark-mode-toggle bg-gray-500 text-white hover:bg-gray-600' : 'light-mode-toggle bg-white text-black hover:bg-gray-200'
-                  } px-2 py-1 rounded-md ${
-                    darkMode ? '' : 'border border-black'
-                  }`}
+                  className='type-name-button  bg-white hover:bg-gray-200 px-2 py-1 rounded-md border border-black'
                   onClick={() => toggleShowTypeAndName(index)}
                 >
                   {showNames[index] ? 'Hide Info' : 'Show Info'}

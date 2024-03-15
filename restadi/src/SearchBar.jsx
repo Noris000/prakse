@@ -11,19 +11,17 @@ const SearchBar = ({ darkMode, searchQuery, setSearchQuery, showSuggestions, set
         onFocus={() => setShowSuggestions(true)}
         onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
         onKeyDown={handleKeyPress}
-        className={`search-input w-full p-2 border rounded-md shadow-sm ${
-          darkMode ? 'bg-gray-500 text-white' : 'bg-white text-black'
-        }`}
+        className='search-input w-full p-2 border rounded-md shadow-sm'
       />
       {showSuggestions && Array.isArray(suggestions) && suggestions.length > 0 && (
-        <ul className={`suggestions-list mt-2 absolute w-full z-10 border border-gray-300 rounded-md ${darkMode ? 'bg-gray-500' : 'bg-white'}`}>
+        <ul className='suggestions-list mt-2 absolute w-full z-10 border border-gray-300 rounded-md bg-white'>
           {suggestions
             .filter((suggestion) => suggestion.base_name.trim() !== '')
             .map((suggestion, index) => (
               <li
                 key={`${suggestion.id}_${index}`}
                 onClick={() => handleSuggestionClick(suggestion)}
-                className={`cursor-pointer p-2 ${darkMode ? 'text-white' : 'text-black'} ${darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200'}`}
+                className='cursor-pointer p-2 hover:bg-gray-200'
               >
                 <div>
                   <strong>{suggestion.base_name}</strong>
