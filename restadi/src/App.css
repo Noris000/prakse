@@ -51,12 +51,8 @@
     border-color: rgb(55 65 81 / var(--tw-border-opacity));
 }
 
-.sliders-container{
-    background-color: #fafafa;
-}
-
 .App[data-theme='dark'] .sliders-container{
-    background-color: #302e2e;
+    background-color: rgb(0 0 0 / 5%);
 }
 
 .App[data-theme='dark'] .sliders-container input[type='number']{
@@ -117,8 +113,106 @@
     background-color: #4b5563;
 }
 
+.App[data-theme='dark'] .search-button,
+.App[data-theme='dark'] .sort-button {
+    background-color: #333;
+    color: #fff;
+    border-color: #fff;
+}
+
+.App[data-theme='dark'] .search-button:hover,
+.App[data-theme='dark'] .sort-button:hover {
+    background-color: #4b5563;
+}
+
+.App[data-theme='dark'] .search-button svg,
+.App[data-theme='dark'] .sort-button svg {
+    fill: #fff;
+}
+
 input[type='number']::-webkit-inner-spin-button,
 input[type='number']::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
+
+.App[data-theme='dark'] .checkboxes-container h2 {
+    --tw-gradient-to: #575656 var(--tw-gradient-to-position);
+}
+
+.App[data-theme='dark'] .sliders-container label {
+    --tw-gradient-to: #575656 var(--tw-gradient-to-position);
+}
+
+.button-container {
+    display: flex;
+    justify-content: flex-start;
+    gap: 5px;
+}
+
+.default-btn{
+    padding: 4px 6px;
+    background: black;
+    color: white;
+    border-radius: 5px;
+}
+
+.default-btn:hover{
+background-color: gray;
+}
+
+.App[data-theme='dark'] .default-btn{
+    background: #7c7c7c;
+    color: white;
+}
+
+.App[data-theme='dark'] .clear-history-button {
+    background-color: #333;
+    color: #fff;
+}
+
+.App[data-theme='dark'] .clear-history-button:hover {
+    background-color: #4b5563;
+    color: #fff;
+}
+
+.App[data-theme='dark'] .default-btn:hover {
+    background-color: #333;
+    color: #fff;
+}
+
+@media screen and (max-width: 1440px) {
+    .plant-info .grid-cols-2 {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto;
+    }
+  
+    .characteristics {
+      grid-column: span 1;
+      grid-row: span 2;
+    }
+  
+    .environment {
+      grid-column: span 1;
+      grid-row: span 1;
+    }
+  
+    .aliases {
+      grid-column: 2 / span 1;
+      grid-row: span 1;
+    }
+  }
+  
+  @media screen and (max-width: 768px) {
+    .plant-info .grid-cols-2 {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
+    }
+  
+    .characteristics,
+    .environment,
+    .aliases {
+      grid-column: auto;
+      grid-row: auto;
+    }
+  }

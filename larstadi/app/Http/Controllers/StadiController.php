@@ -17,84 +17,370 @@ class StadiController extends Controller
         $sortBy = $request->input('sortBy', 'name');
         $sortDirection = $request->input('sortDirection', 'asc');
         $sliderValues = $request->input('sliderValues', []);
+        $checkedCheckboxes = $request->input('checkedCheckboxes', []);
 
-        // Constructing the query
+        $checkboxData = [
+            "Soil" => [
+                "pid" => 13,
+                "values" => [
+                    "Clay" => "2",
+                    "Loam" => "3",
+                    "Sand" => "4",
+                    "Chalk" => "1"
+                ]
+            ],
+            "Water" => [
+                "pid" => 14,
+                "values" => [
+                    "Well–drained" => "1",
+                    "Poorly–drained" => "3",
+                    "Moist but well–drained" => "2"
+                ]
+            ],
+            "pH" => [
+                "pid" => 15,
+                "values" => [
+                    "Acid 0-6.5" => "1",
+                    "Alkaline 7.4+" => "2",
+                    "Neutral 6.6–7.3" => "3"
+                ]
+            ],
+            "Sun" => [
+                "pid" => 16,
+                "values" => [
+                    "Full sun" => "1",
+                    "Partial shade" => "2",
+                    "Full shade" => "3"
+                ]
+            ]
+        ];
+
         $query = Stadi::query();
 
-        // If search term is provided, filters based on base name directly
         if ($search) {
             $query->where('base_name', 'like', '%' . $search . '%');
 
-            // Adds logic to search by synonyms if enabled
             if ($searchSynonyms) {
-                // Include synonyms in search
                 $query->orWhereHas('synonyms', function ($query) use ($search) {
                     $query->where('synonym', 'like', '%' . $search . '%');
                 });
             }
         }
 
-        // Adds logic to filter by slider values if provided
         if (!empty($sliderValues)) {
             foreach ($sliderValues as $pid => $value) {
                 if (!empty($value)) {
                     $query->whereHas('stadiProps', function ($query) use ($pid, $value) {
-                        $query->where('pid', $pid)->where('value_num', $value);
+                        $query->where('pid', $pid)->where('value_num', '<=', $value);
                     });
                 }
             }
         }
 
-        // Sorting logic
+        foreach ($checkedCheckboxes as $category => $values) {
+            if (!empty($values)) {
+                $pid = $checkboxData[$category]['pid'];
+                $query->whereHas('stadiProps', function ($query) use ($pid, $values) {
+                    $query->whereIn('pid', [$pid])->whereIn('value_text', $values);
+                });
+            }
+        }
+
         if ($sortBy === 'name') {
             $query->orderBy('base_name', $sortDirection);
         } elseif ($sortBy === 'dateAdded') {
             $query->orderBy('date_added', $sortDirection);
         }
 
-        // Fetches the data with pagination
-        $stadi = $query->skip($offset)->take($limit)->get();
+        $stadi = $query->whereNotNull('base_name')->where('base_name', '!=', '')->skip($offset)->take($limit)->get();
 
-        // Fetches data from stadi__props table for checkboxes
         $checkboxValues = DB::table('stadi__props')
             ->whereIn('pid', [13, 14, 15, 16])
             ->whereIn('bid', $stadi->pluck('id')->all())
             ->get();
 
-        // Fetches range slider values from database for PID 3, PID 4, PID 6, PID 7, PID 25, and PID 26
+        $nameLvLinks = DB::table('stadi__props')
+            ->where('pid', 1)
+            ->whereIn('bid', $stadi->pluck('id')->all())
+            ->where('value_text', 'like', '%http%')
+            ->get(['bid', 'value_text']);
+
+        $flowers = DB::table('stadi__props')
+            ->where('pid', 5)
+            ->whereIn('bid', $stadi->pluck('id')->all())
+            ->get(['bid', 'value_text']);
+
+        $crown = DB::table('stadi__props')
+            ->where('pid', 8)
+            ->whereIn('bid', $stadi->pluck('id')->all())
+            ->get(['bid', 'value_text']);
+
+        $foliage = DB::table('stadi__props')
+            ->where('pid', 9)
+            ->whereIn('bid', $stadi->pluck('id')->all())
+            ->get(['bid', 'value_text']);
+
         $rangeSliderValues = DB::table('stadi__props')
             ->whereIn('pid', [3, 4, 6, 7, 25, 26])
             ->whereIn('bid', $stadi->pluck('id')->all())
             ->get();
 
-        // Transforms the results
-        $results = $stadi->map(function ($item) use ($checkboxValues, $rangeSliderValues) {
-            // Initializes arrays for range sliders and checkboxes
+        $descriptions = DB::table('stadi__props')
+            ->where('pid', 10)
+            ->whereIn('bid', $stadi->pluck('id')->all())
+            ->get(['bid', 'value_text']);
+
+        $purposes = DB::table('stadi__props')
+            ->where('pid', 21)
+            ->whereIn('bid', $stadi->pluck('id')->all())
+            ->get(['bid', 'value_text']);
+
+        $companions = DB::table('stadi__props')
+            ->where('pid', 24)
+            ->whereIn('bid', $stadi->pluck('id')->all())
+            ->get(['bid', 'value_text']);
+
+        $soilProperties = DB::table('stadi__props')
+            ->where('pid', 13)
+            ->whereIn('bid', $stadi->pluck('id')->all())
+            ->get(['bid', 'value_text']);
+
+        $waterProperties = DB::table('stadi__props')
+            ->where('pid', 14)
+            ->whereIn('bid', $stadi->pluck('id')->all())
+            ->get(['bid', 'value_text']);
+
+        $phProperties = DB::table('stadi__props')
+            ->where('pid', 15)
+            ->whereIn('bid', $stadi->pluck('id')->all())
+            ->get(['bid', 'value_text']);
+
+        $sunlightProperties = DB::table('stadi__props')
+            ->where('pid', 16)
+            ->whereIn('bid', $stadi->pluck('id')->all())
+            ->get(['bid', 'value_text']);
+
+        $results = $stadi->map(function ($item) use ($checkboxValues, $rangeSliderValues, $nameLvLinks, $flowers, $crown, $foliage, $descriptions, $purposes, $companions, $soilProperties, $waterProperties, $phProperties, $sunlightProperties) {
             $rangeSliders = [];
             $checkboxes = [];
-
-            // Populates range slider values
+            $additionalProperties = [
+                'flowers' => [],
+                'crown' => [],
+                'foliage'=> [],
+                'description' => [],
+                'purposes' => [],
+                'companions' => [],
+                'soil' => [],
+                'water' => [],
+                'ph' => [],
+                'sunlight' => []
+            ];
             foreach ($rangeSliderValues as $value) {
                 if ($value->bid === $item->id) {
-                    // Only sets the range slider value if it hasn't been set yet
-                    if (!isset($rangeSliders[$value->pid])) {
-                        $rangeSliders[$value->pid] = $value->value_num; // Sets the value directly
+                    if (in_array($value->pid, [3, 4, 6, 7, 25, 26])) {
+                        // Format and append the range slider values to the rangeSliders array
+                        if (!isset($rangeSliders[$value->pid])) {
+                            // Initialize the range slider array if it doesn't exist
+                            $rangeSliders[$value->pid] = [];
+                        }
+                        // Append the value without the 'cm' suffix
+                        $rangeSliders[$value->pid][] = $value->value_num;
+                    } else {
+                        // Additional properties with 'cm' suffix
+                        $additionalProperties['additional'][] = $this->formatAdditionalProperty($value->pid, $value->value_num);
                     }
                 }
             }
 
-            // Populate checkbox values
             foreach ($checkboxValues as $value) {
                 if ($value->bid === $item->id) {
                     $checkboxes[$value->pid][] = $value->value_text;
                 }
             }
 
+            $links = [];
+            foreach ($nameLvLinks as $link) {
+                if ($link->bid === $item->id) {
+                    $links[] = $link->value_text;
+                }
+            }
+
+            foreach ($flowers as $flower) {
+                if ($flower->bid === $item->id) {
+                    $additionalProperties['flowers'][] = $flower->value_text;
+                }
+            }
+
+            foreach ($crown as $c) {
+                if ($c->bid === $item->id) {
+                    $additionalProperties['crown'][] = $c->value_text;
+                }
+            }
+
+            foreach ($foliage as $f) {
+                if ($f->bid === $item->id) {
+                    $additionalProperties['foliage'][] = $f->value_text;
+                }
+            }
+
+            foreach ($descriptions as $desc) {
+                if ($desc->bid === $item->id) {
+                    $additionalProperties['description'][] = $desc->value_text;
+                }
+            }
+
+            foreach ($purposes as $purpose) {
+                if ($purpose->bid === $item->id) {
+                    $additionalProperties['purposes'][] = $purpose->value_text;
+                }
+            }
+
+            foreach ($companions as $companion) {
+                if ($companion->bid === $item->id) {
+                    $additionalProperties['companions'][] = $companion->value_text;
+                }
+            }
+
+            $baseDescr = $item->base_descr ?? 'Press Show Info for more';
+
+            foreach ($soilProperties as $soil) {
+                if ($soil->bid === $item->id) {
+                    // Explode the value_text by comma to handle multiple soil values
+                    $soilValues = explode(',', $soil->value_text);
+                    foreach ($soilValues as $value) {
+                        // Map the value_text to soil text
+                        $soilText = '';
+                        switch ($value) {
+                            case 1:
+                                $soilText = 'Chalk';
+                                break;
+                            case 2:
+                                $soilText = 'Clay';
+                                break;
+                            case 3:
+                                $soilText = 'Loam';
+                                break;
+                            case 4:
+                                $soilText = 'Sand';
+                                break;
+                        }
+            
+                        if (!empty($soilText)) {
+                            // Check if "soil" array already exists, if not, create it
+                            if (!isset($additionalProperties['soil'])) {
+                                $additionalProperties['soil'] = [];
+                            }
+                            // Append the soil text to the "soil" array
+                            $additionalProperties['soil'][] = $soilText;
+                        }
+                    }
+                }
+            }
+            
+            foreach ($waterProperties as $water) {
+                if ($water->bid === $item->id) {
+                    // Explode the value_text by comma to handle multiple water values
+                    $waterValues = explode(',', $water->value_text);
+                    foreach ($waterValues as $value) {
+                        // Map the value_text to water text
+                        $waterText = '';
+                        switch ($value) {
+                            case 1:
+                                $waterText = 'Well-drained';
+                                break;
+                            case 2:
+                                $waterText = 'Moist but well-drained';
+                                break;
+                            case 3:
+                                $waterText = 'Poorly-drained';
+                                break;
+                        }
+            
+                        if (!empty($waterText)) {
+                            // Check if "water" array already exists
+                            if (!isset($additionalProperties['water'])) {
+                                $additionalProperties['water'] = [];
+                            }
+                            // Append the water text to the "water" array
+                            $additionalProperties['water'][] = $waterText;
+                        }
+                    }
+                }
+            }
+                        
+            foreach ($phProperties as $ph) {
+                if ($ph->bid === $item->id) {
+                    // Explode the value_text by comma to handle multiple pH values
+                    $phValues = explode(',', $ph->value_text);
+                    foreach ($phValues as $value) {
+                        // Map the value_text to pH text
+                        $phText = '';
+                        switch ($value) {
+                            case 1:
+                                $phText = 'Acid 0-6.5';
+                                break;
+                            case 2:
+                                $phText = 'Alkaline 7.4+';
+                                break;
+                            case 3:
+                                $phText = 'Neutral 6.6–7.3';
+                                break;
+                        }
+            
+                        if (!empty($phText)) {
+                            // Check if "ph" array already exists, if not, create it
+                            if (!isset($additionalProperties['ph'])) {
+                                $additionalProperties['ph'] = [];
+                            }
+                            // Append the pH text to the "ph" array
+                            $additionalProperties['ph'][] = $phText;
+                        }
+                    }
+                }
+            }
+
+            foreach ($sunlightProperties as $sunlight) {
+                if ($sunlight->bid === $item->id) {
+                    // Explode the value_text by comma to handle multiple sunlight values
+                    $sunlightValues = explode(',', $sunlight->value_text);
+                    foreach ($sunlightValues as $value) {
+                        // Map the value_text to sunlight text
+                        $sunlightText = '';
+                        switch ($value) {
+                            case 1:
+                                $sunlightText = 'Full sun';
+                                break;
+                            case 2:
+                                $sunlightText = 'Partial shade';
+                                break;
+                            case 3:
+                                $sunlightText = 'Full shade';
+                                break;
+                        }
+            
+                        if (!empty($sunlightText)) {
+                            // Check if "sunlight" array already exists, if not, create it
+                            if (!isset($additionalProperties['sunlight'])) {
+                                $additionalProperties['sunlight'] = [];
+                            }
+                            // Append the sunlight text to the "sunlight" array
+                            $additionalProperties['sunlight'][] = $sunlightText;
+                        }
+                    }
+                }
+            }
+
+            foreach ($additionalProperties as $key => $value) {
+                if (empty($value)) {
+                    $additionalProperties[$key] = ['No Information'];
+                }
+            }
+            
             return [
                 'id' => $item->id,
                 'base_name' => $item->base_name,
                 'date_added' => $item->date_added,
-                'base_descr' => null,
+                'base_descr' => $baseDescr,
                 'range_sliders' => $rangeSliders,
                 'checkboxes' => $checkboxes,
                 'synonyms' => $item->synonyms->map(function ($synonym) {
@@ -102,11 +388,12 @@ class StadiController extends Controller
                         'type' => $synonym->type,
                         'name' => $synonym->synonym
                     ];
-                })
+                }),
+                'links' => $links,
+                'additional_properties' => $additionalProperties
             ];
         });
 
-        // Fetches suggestions directly based on base names and synonyms
         $suggestions = Stadi::where('base_name', 'like', '%' . $search . '%')
             ->orWhereHas('synonyms', function ($query) use ($search) {
                 $query->where('synonym', 'like', '%' . $search . '%');
@@ -114,7 +401,6 @@ class StadiController extends Controller
             ->limit(5)
             ->get();
 
-        // Transforming suggestions
         $formattedSuggestions = $suggestions->map(function ($suggestion) {
             return [
                 'base_name' => $suggestion->base_name,
@@ -127,58 +413,17 @@ class StadiController extends Controller
             ];
         });
 
-        // Data for checkboxes
-        $checkboxData = [
-            "Soil" => [
-                "pid" => 13,
-                "values" => [
-                    "2" => "Clay",
-                    "3" => "Loam",
-                    "4" => "Sand",
-                    "1" => "Chalk"
-                ]
-            ],
-            "Water" => [
-                "pid" => 14,
-                "values" => [
-                    "1" => "Well–drained",
-                    "3" => "Poorly–drained",
-                    "2" => "Moist but well–drained"
-                ]
-            ],
-            "pH" => [
-                "pid" => 15,
-                "values" => [
-                    "1" => "Acid 0-6.5",
-                    "2" => "Alkaline 7.4+",
-                    "3" => "Neutral 6.6–7.3"
-                ]
-            ],
-            "Sun" => [
-                "pid" => 16,
-                "values" => [
-                    "1" => "Full sun",
-                    "2" => "Partial shade",
-                    "3" => "Full shade"
-                ]
-            ]
-        ];
-
-        // Constructing response data
         $responseData = [
             'stadi' => $results->toArray(),
             'suggestions' => $formattedSuggestions,
-            'checkboxData' => $checkboxData
         ];
 
-        // Fetches range slider values for PID 3, PID 4, PID 6, PID 7, PID 25, and PID 26
         $pidRangeSliderValues = DB::table('stadi__props')
             ->whereIn('pid', [3, 4, 6, 7, 25, 26])
             ->select('pid', DB::raw('MIN(value_num) as min_value'), DB::raw('MAX(value_num) as max_value'))
             ->groupBy('pid')
             ->get();
 
-        // Adds PID range slider values to the response data
         $pidRangeSliderValues->each(function ($pidRangeSlider) use (&$responseData) {
             $pid = 'pid_' . $pidRangeSlider->pid . '_range_slider_values';
             if (in_array($pidRangeSlider->pid, [3, 4, 6, 7, 25, 26])) {
@@ -199,7 +444,7 @@ class StadiController extends Controller
         if (!$stadi) {
             return response()->json(['error' => 'Plant not found'], 404);
         }
-    
+
         return view('stadi.show', ['stadi' => $stadi]);
     }
 }

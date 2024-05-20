@@ -1,16 +1,49 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const SearchBar = ({ darkMode, searchQuery, setSearchQuery, showSuggestions, setShowSuggestions, handleKeyPress, handleSearch, handleSuggestionClick, suggestions }) => {
+  const [inputValue, setInputValue] = useState('');
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setInputValue(value);
+    handleSearch(value);
+  };
+  
+  // Handle suggestion click
+  const handleClickSuggestion = (suggestion) => {
+    handleSuggestionClick(suggestion);
+    setInputValue('');
+  };
+
+  // Handle input focus
+  const handleInputFocus = () => {
+    setShowSuggestions(true);
+  };
+
+  // Handle input blur
+  const handleInputBlur = () => {
+    setTimeout(() => setShowSuggestions(false), 200);
+  };
+
+  // Handle key press (Enter) for search
+  const handleKeyPressLocal = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch(inputValue);
+      setShowSuggestions(false);
+    }
+    handleKeyPress(e);
+  };
+
   return (
     <div className="search-bar-container w-full md:w-2/3 mb-2 relative">
       <input
         type="text"
         placeholder="Search..."
-        value={searchQuery}
-        onChange={(e) => handleSearch(e.target.value)}
-        onFocus={() => setShowSuggestions(true)}
-        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-        onKeyDown={handleKeyPress}
+        value={inputValue !== '' ? inputValue : searchQuery}
+        onChange={handleInputChange}
+        onFocus={handleInputFocus}
+        onBlur={handleInputBlur}
+        onKeyDown={handleKeyPressLocal}
         className='search-input w-full p-2 border rounded-md shadow-sm'
       />
       {showSuggestions && Array.isArray(suggestions) && suggestions.length > 0 && (
@@ -20,7 +53,7 @@ const SearchBar = ({ darkMode, searchQuery, setSearchQuery, showSuggestions, set
             .map((suggestion, index) => (
               <li
                 key={`${suggestion.id}_${index}`}
-                onClick={() => handleSuggestionClick(suggestion)}
+                onClick={() => handleClickSuggestion(suggestion)}
                 className='cursor-pointer p-2 hover:bg-gray-200'
               >
                 <div>
