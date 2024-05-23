@@ -173,21 +173,66 @@ class StadiController extends Controller
                 'soil' => [],
                 'water' => [],
                 'ph' => [],
-                'sunlight' => []
+                'sunlight' => [],
+                'height_min' => [],
+                'height_max' => [],
+                'width_min' => [],
+                'width_max' => [],
+                'flower_height' => [],
+                'leaf_height' => []
             ];
+
             foreach ($rangeSliderValues as $value) {
                 if ($value->bid === $item->id) {
                     if (in_array($value->pid, [3, 4, 6, 7, 25, 26])) {
-                        // Format and append the range slider values to the rangeSliders array
                         if (!isset($rangeSliders[$value->pid])) {
-                            // Initialize the range slider array if it doesn't exist
                             $rangeSliders[$value->pid] = [];
                         }
-                        // Append the value without the 'cm' suffix
                         $rangeSliders[$value->pid][] = $value->value_num;
-                    } else {
-                        // Additional properties with 'cm' suffix
-                        $additionalProperties['additional'][] = $this->formatAdditionalProperty($value->pid, $value->value_num);
+                    }
+                    
+                    if ($value->pid == 3) {
+                        // Convert centimeters to meters and format as decimal if needed
+                        $height_min = $value->value_num / 100;
+                        if ($height_min < 1) {
+                            $height_min = number_format($height_min, 2);
+                        }
+                        $additionalProperties['height_min'] = [$height_min . ' m'];
+                    } elseif ($value->pid == 4) {
+                        // Convert centimeters to meters and format as decimal if needed
+                        $height_max = $value->value_num / 100;
+                        if ($height_max < 1) {
+                            $height_max = number_format($height_max, 2);
+                        }
+                        $additionalProperties['height_max'] = [$height_max . ' m'];
+                    } elseif ($value->pid == 6) {
+                        // Convert centimeters to meters and format as decimal if needed
+                        $width_min = $value->value_num / 100;
+                        if ($width_min < 1) {
+                            $width_min = number_format($width_min, 2);
+                        }
+                        $additionalProperties['width_min'] = [$width_min . ' m'];
+                    } elseif ($value->pid == 7) {
+                        // Convert centimeters to meters and format as decimal if needed
+                        $width_max = $value->value_num / 100;
+                        if ($width_max < 1) {
+                            $width_max = number_format($width_max, 2);
+                        }
+                        $additionalProperties['width_max'] = [$width_max . ' m'];
+                    } elseif ($value->pid == 25) {
+                        // Convert centimeters to meters and format as decimal if needed
+                        $flower_height = $value->value_num / 100;
+                        if ($flower_height < 1) {
+                            $flower_height = number_format($flower_height, 2);
+                        }
+                        $additionalProperties['flower_height'] = [$flower_height . ' m'];
+                    } elseif ($value->pid == 26) {
+                        // Convert centimeters to meters and format as decimal if needed
+                        $leaf_height = $value->value_num / 100;
+                        if ($leaf_height < 1) {
+                            $leaf_height = number_format($leaf_height, 2);
+                        }
+                        $additionalProperties['leaf_height'] = [$leaf_height . ' m'];
                     }
                 }
             }
@@ -211,15 +256,15 @@ class StadiController extends Controller
                 }
             }
 
-            foreach ($crown as $c) {
-                if ($c->bid === $item->id) {
-                    $additionalProperties['crown'][] = $c->value_text;
+            foreach ($crown as $cr) {
+                if ($cr->bid === $item->id) {
+                    $additionalProperties['crown'][] = $cr->value_text;
                 }
             }
 
-            foreach ($foliage as $f) {
-                if ($f->bid === $item->id) {
-                    $additionalProperties['foliage'][] = $f->value_text;
+            foreach ($foliage as $foli) {
+                if ($foli->bid === $item->id) {
+                    $additionalProperties['foliage'][] = $foli->value_text;
                 }
             }
 
@@ -229,15 +274,39 @@ class StadiController extends Controller
                 }
             }
 
-            foreach ($purposes as $purpose) {
-                if ($purpose->bid === $item->id) {
-                    $additionalProperties['purposes'][] = $purpose->value_text;
+            foreach ($purposes as $pur) {
+                if ($pur->bid === $item->id) {
+                    $additionalProperties['purposes'][] = $pur->value_text;
                 }
             }
 
-            foreach ($companions as $companion) {
-                if ($companion->bid === $item->id) {
-                    $additionalProperties['companions'][] = $companion->value_text;
+            foreach ($companions as $comp) {
+                if ($comp->bid === $item->id) {
+                    $additionalProperties['companions'][] = $comp->value_text;
+                }
+            }
+
+            foreach ($soilProperties as $soil) {
+                if ($soil->bid === $item->id) {
+                    $additionalProperties['soil'][] = $soil->value_text;
+                }
+            }
+
+            foreach ($waterProperties as $water) {
+                if ($water->bid === $item->id) {
+                    $additionalProperties['water'][] = $water->value_text;
+                }
+            }
+
+            foreach ($phProperties as $ph) {
+                if ($ph->bid === $item->id) {
+                    $additionalProperties['ph'][] = $ph->value_text;
+                }
+            }
+
+            foreach ($sunlightProperties as $sun) {
+                if ($sun->bid === $item->id) {
+                    $additionalProperties['sunlight'][] = $sun->value_text;
                 }
             }
 
@@ -264,7 +333,7 @@ class StadiController extends Controller
                                 $soilText = 'Sand';
                                 break;
                         }
-            
+                        
                         if (!empty($soilText)) {
                             // Check if "soil" array already exists, if not, create it
                             if (!isset($additionalProperties['soil'])) {
@@ -295,7 +364,7 @@ class StadiController extends Controller
                                 $waterText = 'Poorly-drained';
                                 break;
                         }
-            
+                        
                         if (!empty($waterText)) {
                             // Check if "water" array already exists
                             if (!isset($additionalProperties['water'])) {
@@ -369,7 +438,7 @@ class StadiController extends Controller
                     }
                 }
             }
-
+            
             foreach ($additionalProperties as $key => $value) {
                 if (empty($value)) {
                     $additionalProperties[$key] = ['No Information'];

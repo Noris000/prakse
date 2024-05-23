@@ -1,218 +1,260 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+    @import 'tailwindcss/base';
+    @import 'tailwindcss/components';
+    @import 'tailwindcss/utilities';
 
-@media screen and (min-width: 1260px) {
-    
+    @media screen and (min-width: 1260px) {
+    /* Styling for checkbox when there are 2 columns */
     .checkboxes-container.grid-cols-2 {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
+    /* Styling for sliders when there are 2 columns */
     .sliders-container .grid-cols-2{
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     }
+
+    /* Ordering for elements inside 'sliders-container' */
     .sliders-container .height-min {
-        order: 1;
+    order: 1;
     }
 
     .sliders-container .width-min {
-        order: 2;
+    order: 2;
     }
 
     .sliders-container .height-flowers {
-        order: 3;
+    order: 3;
     }
 
     .sliders-container .height-max {
-        order: 4;
+    order: 4;
     }
 
     .sliders-container .width-max {
-        order: 5;
+    order: 5;
     }
 
     .sliders-container .height-leaves {
-        order: 6;
+    order: 6;
     }
-}
+    }
 
-.App{
+    /* Styling for the entire app */
+    .App{
     transition: background-color 0.3s ease, color 0.3s ease;
     min-height: 100vh;
-}
+    }
 
-.App[data-theme='dark'] {
+    /* Styling for the app when its data-theme is set to 'dark' */
+    .App[data-theme='dark'] {
     background-color: #333;
     color: #fff;
     transition: background-color 0.3s ease, color 0.3s ease;
-}
+    }
 
-.sort-options-container{
+    /* Styling for the container holding sort options */
+    .sort-options-container{
     border-color: rgb(55 65 81 / var(--tw-border-opacity));
-}
+    }
 
-.App[data-theme='dark'] .sliders-container{
+    /* Styling for the sliders container in dark mode */
+    .App[data-theme='dark'] .sliders-container{
     background-color: rgb(0 0 0 / 5%);
-}
+    }
 
-.App[data-theme='dark'] .sliders-container input[type='number']{
+    /* Styling for number inputs in sliders container in dark mode */
+    .App[data-theme='dark'] .sliders-container input[type='number']{
     color: #fff;
     background-color: rgb(107 114 128 / var(--tw-bg-opacity));
-}
+    }
 
-.App[data-theme='dark'] .toggle-container button{
+    /* Styling for toggle buttons in dark mode */
+    .App[data-theme='dark'] .toggle-container button{
     background-color: rgb(107 114 128 / var(--tw-bg-opacity));
     color: #fff;
     border:none;
-}
+    }
 
-.App[data-theme='dark'] .toggle-container button:hover{
+    /* Hover styling for toggle buttons in dark mode */
+    .App[data-theme='dark'] .toggle-container button:hover{
     background-color: rgb(75 85 99 / var(--tw-bg-opacity));
-}
+    }
 
-.App[data-theme='dark'] .sort-options-list li:hover{
+    /* Hover styling for sort options list in dark mode */
+    .App[data-theme='dark'] .sort-options-list li:hover{
     background-color: rgb(75 85 99 / var(--tw-bg-opacity));
-}
+    }
 
-.App[data-theme='dark'] .search-history-list li{
+    /* Styling for search history list items in dark mode */
+    .App[data-theme='dark'] .search-history-list li{
     background-color: rgb(107 114 128 / var(--tw-bg-opacity));
-}
+    }
 
-.App[data-theme='dark'] .search-history-list li:hover{
+    /* Hover styling for search history list items in dark mode */
+    .App[data-theme='dark'] .search-history-list li:hover{
     background-color: rgb(75 85 99 / var(--tw-bg-opacity));
-}
+    }
 
-.App[data-theme='dark'] .search-bar-container{
+    /* Styling for search bar container in dark mode */
+    .App[data-theme='dark'] .search-bar-container{
     background-color: rgb(107 114 128 / var(--tw-bg-opacity));
-}
+    }
 
-.App[data-theme='dark'] .search-input {
+    /* Styling for search input in dark mode */
+    .App[data-theme='dark'] .search-input {
     background-color: #6b7280;
     color: #fff;
-}
+    }
 
-.App[data-theme='dark'] .suggestions-list {
+    /* Styling for suggestions list in dark mode */
+    .App[data-theme='dark'] .suggestions-list {
     background-color: #6b7280;
-}
+    }
 
-.App[data-theme='dark'] .cursor-pointer {
+    /* Styling for cursor pointer in dark mode */
+    .App[data-theme='dark'] .cursor-pointer {
     color: #fff;
-}
+    }
 
-.App[data-theme='dark'] .cursor-pointer:hover {
+    /* Hover styling for cursor pointer in dark mode */
+    .App[data-theme='dark'] .cursor-pointer:hover {
     background-color: #4b5563;
-}
+    }
 
-.App[data-theme='dark'] .type-name-container .type-name-button {
+    /* Styling for type name buttons in dark mode */
+    .App[data-theme='dark'] .type-name-container .type-name-button {
     background-color: #6b7280;
     color: #fff;
     border:none;
-}
+    }
 
-.App[data-theme='dark'] .type-name-container .type-name-button:hover {
+    /* Hover styling for type name buttons in dark mode */
+    .App[data-theme='dark'] .type-name-container .type-name-button:hover {
     background-color: #4b5563;
-}
+    }
 
-.App[data-theme='dark'] .search-button,
-.App[data-theme='dark'] .sort-button {
+    /* Styling for search and sort buttons in dark mode */
+    .App[data-theme='dark'] .search-button,
+    .App[data-theme='dark'] .sort-button {
     background-color: #333;
     color: #fff;
     border-color: #fff;
-}
+    }
 
-.App[data-theme='dark'] .search-button:hover,
-.App[data-theme='dark'] .sort-button:hover {
+    /* Hover styling for search and sort buttons in dark mode */
+    .App[data-theme='dark'] .search-button:hover,
+    .App[data-theme='dark'] .sort-button:hover {
     background-color: #4b5563;
-}
+    }
 
-.App[data-theme='dark'] .search-button svg,
-.App[data-theme='dark'] .sort-button svg {
+    /* Styling for SVG icons inside search and sort buttons in dark mode */
+    .App[data-theme='dark'] .search-button svg,
+    .App[data-theme='dark'] .sort-button svg {
     fill: #fff;
-}
+    }
 
-input[type='number']::-webkit-inner-spin-button,
-input[type='number']::-webkit-outer-spin-button {
+    /* Styling for number input spin buttons */
+    input[type='number']::-webkit-inner-spin-button,
+    input[type='number']::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
-}
+    }
 
-.App[data-theme='dark'] .checkboxes-container h2 {
+    /* Styling for checkboxes container title in dark mode */
+    .App[data-theme='dark'] .checkboxes-container h2 {
     --tw-gradient-to: #575656 var(--tw-gradient-to-position);
-}
+    }
 
-.App[data-theme='dark'] .sliders-container label {
+    /* Styling for slider labels in dark mode */
+    .App[data-theme='dark'] .sliders-container label {
     --tw-gradient-to: #575656 var(--tw-gradient-to-position);
-}
+    }
 
-.button-container {
+    /* Styling for button container */
+    .button-container {
     display: flex;
     justify-content: flex-start;
     gap: 5px;
-}
+    }
 
-.default-btn{
+    /* Styling for default buttons */
+    .default-btn{
     padding: 4px 6px;
     background: black;
     color: white;
     border-radius: 5px;
-}
+    }
 
-.default-btn:hover{
-background-color: gray;
-}
+    /* Hover styling for default buttons */
+    .default-btn:hover{
+    background-color: gray;
+    }
 
-.App[data-theme='dark'] .default-btn{
+    /* Styling for default buttons in dark mode */
+    .App[data-theme='dark'] .default-btn{
     background: #7c7c7c;
     color: white;
-}
+    }
 
-.App[data-theme='dark'] .clear-history-button {
+    /* Styling for clear history button in dark mode */
+    .App[data-theme='dark'] .clear-history-button {
     background-color: #333;
     color: #fff;
-}
+    }
 
-.App[data-theme='dark'] .clear-history-button:hover {
+    /* Hover styling for clear history button in dark mode */
+    .App[data-theme='dark'] .clear-history-button:hover {
     background-color: #4b5563;
     color: #fff;
-}
+    }
 
-.App[data-theme='dark'] .default-btn:hover {
+    /* Hover styling for default buttons in dark mode */
+    .App[data-theme='dark'] .default-btn:hover {
     background-color: #333;
     color: #fff;
-}
+    }
 
-@media screen and (max-width: 1440px) {
+    @media screen and (max-width: 1440px) {
+    /* When there are 2 columns */
     .plant-info .grid-cols-2 {
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: auto;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
     }
-  
+
     .characteristics {
-      grid-column: span 1;
-      grid-row: span 2;
+    grid-column: span 1;
+    grid-row: span 2;
     }
-  
+
     .environment {
-      grid-column: span 1;
-      grid-row: span 1;
+    grid-column: span 1;
+    grid-row: span 1;
     }
-  
+
     .aliases {
-      grid-column: 2 / span 1;
-      grid-row: span 1;
+    grid-column: 2 / span 1;
+    grid-row: span 1;
     }
-  }
-  
-  @media screen and (max-width: 768px) {
+    }
+
+    @media screen and (max-width: 768px) {
+    /* Styling for plant info grid container when there is 1 column */
     .plant-info .grid-cols-2 {
-      grid-template-columns: 1fr;
-      grid-template-rows: auto;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
     }
-  
+
+    /* Default styles for the grid */
+    .info-columns {
+    display: grid;
+    grid-template-columns: 1fr;
+    }
+
+    /* Resetting grid column and row */
     .characteristics,
     .environment,
     .aliases {
-      grid-column: auto;
-      grid-row: auto;
+    grid-column: auto;
+    grid-row: auto;
     }
-  }
+    }

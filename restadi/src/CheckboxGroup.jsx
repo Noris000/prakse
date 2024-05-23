@@ -3,10 +3,14 @@ import React from 'react';
 const CheckboxGroup = ({ checkboxValues, handleCheckboxChange }) => {
 
   return (
+    // Container for checkboxes with grid layout
     <div className="checkboxes-container grid gap-4 grid-cols-2 p-4 border rounded-md w-full md:w-2/4 mx-auto mb-4">
+      {/* Soil checkboxes */}
       <div>
+        {/* Soil section title */}
         <h2 className="font-bold text-lg border-b-3 border-gray-500 bg-gradient-to-t from-transparent to-gray-300 text-center">Soil</h2>
         <div className="p-1">
+          {/* Individual soil checkboxes */}
           <label className="mb-2 block font-bold">
             <input
               type="checkbox"
@@ -49,9 +53,12 @@ const CheckboxGroup = ({ checkboxValues, handleCheckboxChange }) => {
           </label>
         </div>
       </div>
+      {/* Water checkboxes */}
       <div>
+        {/* Water section title */}
         <h2 className="font-bold text-lg border-b-3 border-gray-500 bg-gradient-to-t from-transparent to-gray-300 text-center">Water</h2>
         <div className="p-1">
+          {/* Individual water checkboxes */}
           <label className="mb-2 block font-bold">
             <input
               type="checkbox"
@@ -84,9 +91,12 @@ const CheckboxGroup = ({ checkboxValues, handleCheckboxChange }) => {
           </label>
         </div>
       </div>
+      {/* pH checkboxes */}
       <div>
+        {/* pH section title */}
         <h2 className="font-bold text-lg border-b-3 border-gray-500 bg-gradient-to-t from-transparent to-gray-300 text-center">pH</h2>
         <div className="p-1">
+          {/* Individual pH checkboxes */}
           <label className="mb-2 block font-bold">
             <input
               type="checkbox"
@@ -119,9 +129,12 @@ const CheckboxGroup = ({ checkboxValues, handleCheckboxChange }) => {
           </label>
         </div>
       </div>
+      {/* Sunlight checkboxes */}
       <div>
+        {/* Sunlight section title */}
         <h2 className="font-bold text-lg border-b-3 border-gray-500 bg-gradient-to-t from-transparent to-gray-300 text-center">Sunlight</h2>
         <div className="p-1">
+          {/* Individual sunlight checkboxes */}
           <label className="mb-2 block font-bold">
             <input
               type="checkbox"
@@ -158,4 +171,5 @@ const CheckboxGroup = ({ checkboxValues, handleCheckboxChange }) => {
   );
 };
 
+// Exporting the CheckboxGroup component as default
 export default CheckboxGroup;
