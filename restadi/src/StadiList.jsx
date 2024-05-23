@@ -525,7 +525,7 @@ const handleResetSliderValues = async () => {
 
   // Make the API call after resetting the slider values
   try {
-    const response = await axios.get(`/api/stadi`, {
+    const response = await axios.get(`http://127.0.0.1:8000/api/stadi`, {
       params: {
         limit: 10,
         offset: (page - 1) * 10,
