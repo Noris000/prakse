@@ -18,7 +18,7 @@ const SearchResults = ({
           <p className="no-data text-gray-500">No data found</p>
         ) : (
           stadi.map((item, index) => (
-            <li key={`${item.id}_${index}`} className="stadi-item border p-4 rounded-md shadow-md mb-4 w-full md:w-1/2 mx-auto relative">
+            <li key={`${item.id}_${index}`} className="stadi-item border p-4 rounded-md shadow-md mb-4 md:w-1/2 mx-auto relative w-fit">
               {/* Display basic information */}
               <div className="absolute top-0 right-0 p-2 bg-gray-100 text-black rounded-bl-lg"><strong className="text-lg font-semibold">ID:</strong> {item.id}<br /> </div>
               <strong className="text-lg font-semibold">Base Name:</strong> {item.base_name}<br />
